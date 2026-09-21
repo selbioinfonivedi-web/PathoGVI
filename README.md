@@ -33,8 +33,8 @@ network access is needed after that, and no MAFFT/IQ-TREE/other bioinformatics
 tools to install.
 
 ```bash
-git clone https://github.com/selbioinfonivedi-web/GVI_calculator.git
-cd GVI_calculator/gvi-calculator-java
+git clone https://github.com/selbioinfonivedi-web/PathoGVI.git
+cd PathoGVI/gvi-calculator-java
 mvn install
 ```
 
