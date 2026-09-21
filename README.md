@@ -46,7 +46,6 @@ with `mvn install -DskipTests` if you just want the jars quickly (see
 
 ```bash
 java -jar gvi-calculator-java/gvi-web/target/gvi-calculator-web.jar
-# → http://127.0.0.1:8080
 ```
 
 A local analyst's tool, not a service:
