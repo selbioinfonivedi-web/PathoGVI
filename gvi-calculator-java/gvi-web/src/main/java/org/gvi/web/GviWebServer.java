@@ -63,20 +63,28 @@ public final class GviWebServer {
     private final AnalysisService service = new AnalysisService();
     private HttpServer server;
 
+    /** How many ports past the requested one to try before giving up, when the port was not explicitly chosen. */
+    private static final int PORT_SEARCH_RANGE = 20;
+
     public static void main(String[] args) throws Exception {
         int port = DEFAULT_PORT;
+        boolean portExplicit = false;
         String host = "127.0.0.1";
         String password = null;
         for (int i = 0; i < args.length; i++) {
             switch (args[i]) {
-                case "--port" -> port = Integer.parseInt(args[++i]);
+                case "--port" -> {
+                    port = Integer.parseInt(args[++i]);
+                    portExplicit = true;
+                }
                 case "--host" -> host = args[++i];
                 case "--password" -> password = args[++i];
                 case "--help", "-h" -> {
                     System.out.println("""
                             GVI Calculator -- web interface
 
-                              --port <n>       port to listen on (default 8080)
+                              --port <n>       port to listen on (default 8080; if not given explicitly and
+                                               that port is busy, the next few ports are tried automatically)
                               --host <addr>    address to bind (default 127.0.0.1, loopback only)
                               --password <pw>  require HTTP Basic Auth (username "analyst") with this password.
                                                Prefer the GVI_WEB_PASSWORD environment variable instead of this
@@ -85,7 +93,8 @@ public final class GviWebServer {
                                                Binding --host beyond loopback requires a password: one is
                                                generated and printed if you don't supply one.
 
-                            Runs the same pipeline as the command-line tool. Open the printed URL in a browser.""");
+                            Runs the same pipeline as the command-line tool. Opens in your default browser,
+                            or open the printed URL yourself if that doesn't happen.""");
                     return;
                 }
                 default -> {
@@ -95,21 +104,50 @@ public final class GviWebServer {
             }
         }
         if (password == null) password = System.getenv(PASSWORD_ENV_VAR);
-        new GviWebServer().start(host, port, password);
+        try {
+            new GviWebServer().start(host, port, password, portExplicit);
+        } catch (java.net.BindException e) {
+            // The common, expected failure here is "something else is already using this port" -- a stack
+            // trace is the wrong way to tell a user that. Anything else still propagates normally below.
+            System.err.println();
+            System.err.println("Could not start: " + e.getMessage());
+            System.exit(1);
+        }
     }
 
     public void start(String host, int port) throws IOException {
-        start(host, port, null);
+        start(host, port, null, true);
     }
 
     public void start(String host, int port, String password) throws IOException {
+        start(host, port, password, true);
+    }
+
+    /**
+     * @param portExplicit false to treat {@code port} as a starting point rather than a fixed requirement --
+     *                     if it's already in use, the next {@link #PORT_SEARCH_RANGE} ports are tried in turn
+     *                     before giving up. True (what every other overload here defaults to, and what tests
+     *                     rely on for their ephemeral port 0) binds exactly the requested port or fails.
+     */
+    public void start(String host, int port, String password, boolean portExplicit) throws IOException {
         boolean generated = false;
         if (password == null && !isLoopback(host)) {
             password = generatePassword();
             generated = true;
         }
 
-        server = HttpServer.create(new InetSocketAddress(InetAddress.getByName(host), port), 0);
+        InetAddress address = InetAddress.getByName(host);
+        if (portExplicit) {
+            try {
+                server = HttpServer.create(new InetSocketAddress(address, port), 0);
+            } catch (java.net.BindException e) {
+                throw new java.net.BindException("Port " + port + " is already in use by something else. "
+                        + "Try a different --port, or omit --port to have one chosen automatically.");
+            }
+        } else {
+            server = bindWithRetry(address, port);
+        }
+        int boundPort = server.getAddress().getPort();
         HttpContext[] contexts = {
                 server.createContext("/", this::handleStatic),
                 server.createContext("/api/analyze", this::handleAnalyze),
@@ -128,7 +166,10 @@ public final class GviWebServer {
         server.setExecutor(pool);
         server.start();
 
-        System.out.println("GVI Calculator web interface -- http://" + host + ":" + port);
+        System.out.println("GVI Calculator web interface -- http://" + host + ":" + boundPort);
+        if (!portExplicit && boundPort != port) {
+            System.out.println("  (port " + port + " was already in use; bound " + boundPort + " instead)");
+        }
         if (!isLoopback(host)) {
             System.out.println();
             System.out.println("  Bound to " + host + ", which is not loopback -- HTTP Basic Auth is required");
@@ -150,6 +191,42 @@ public final class GviWebServer {
         }
         System.out.println();
         System.out.println("Press Ctrl+C to stop.");
+
+        openBrowser(host, boundPort);
+    }
+
+    /**
+     * Best-effort only: opens the local machine's default browser to this server's URL, so the common case
+     * (someone just ran the jar and wants to use it) needs no extra step. Silently does nothing wherever
+     * that isn't possible or sensible -- a headless environment (CI, a real remote server over SSH) reports
+     * no desktop support, which is exactly when auto-opening a browser would be meaningless anyway.
+     */
+    private void openBrowser(String host, int boundPort) {
+        if (!java.awt.Desktop.isDesktopSupported()) return;
+        java.awt.Desktop desktop = java.awt.Desktop.getDesktop();
+        if (!desktop.isSupported(java.awt.Desktop.Action.BROWSE)) return;
+        try {
+            // 0.0.0.0 means "every interface", not a literal address a browser can navigate to.
+            String browseHost = "0.0.0.0".equals(host) ? "127.0.0.1" : host;
+            desktop.browse(java.net.URI.create("http://" + browseHost + ":" + boundPort + "/"));
+        } catch (Exception e) {
+            log.debug("Could not auto-open a browser (this is not fatal)", e);
+        }
+    }
+
+    /** Binds {@code startPort}, or the next free one within {@link #PORT_SEARCH_RANGE} if that one is taken. */
+    private HttpServer bindWithRetry(InetAddress address, int startPort) throws IOException {
+        java.net.BindException lastFailure = null;
+        for (int candidate = startPort; candidate < startPort + PORT_SEARCH_RANGE; candidate++) {
+            try {
+                return HttpServer.create(new InetSocketAddress(address, candidate), 0);
+            } catch (java.net.BindException e) {
+                lastFailure = e;
+            }
+        }
+        throw new java.net.BindException("Ports " + startPort + "-" + (startPort + PORT_SEARCH_RANGE - 1)
+                + " are all already in use. Free one of them, or specify a different one explicitly with --port."
+                + (lastFailure != null && lastFailure.getMessage() != null ? " (" + lastFailure.getMessage() + ")" : ""));
     }
 
     private static String generatePassword() {
