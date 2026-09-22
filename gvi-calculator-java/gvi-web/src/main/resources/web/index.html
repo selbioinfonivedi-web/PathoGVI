@@ -200,12 +200,15 @@
                   </div>
 
                   <div class="field" style="border-top:1px solid var(--border-lt); padding-top:13px; margin-top:8px;">
-                    <label for="weightScheme">Composite weighting</label>
-                    <select id="weightScheme">
-                      <option value="">Default (specification midpoints)</option>
-                      <option value="custom">Custom</option>
-                    </select>
-                    <p class="hint">The default weights are the specification's asserted midpoints, not fitted against any outcome. Any index you don't set below keeps its default, and the full set of 9 is renormalized to sum to 1 automatically.</p>
+                    <label>Composite weighting</label>
+                    <div class="toggle-group" id="weightScheme">
+                      <button type="button" data-scheme="default" class="active">Default</button>
+                      <button type="button" data-scheme="custom">Custom</button>
+                    </div>
+                    <p class="hint">Default weights are the specification's asserted midpoints (not fitted against any
+                      outcome): &mu; 0.135 &middot; Re 0.30 &middot; &pi; 0.10 &middot; MB 0.215 &middot; dN/dS 0.15 &middot;
+                      GD 0.10 &middot; CAI 0.0275 &middot; GC 0.0275 &middot; RI 0.035. In Custom, any index you don't set
+                      keeps its default, and the full set of 9 is renormalized to sum to 1 automatically.</p>
                     <div id="customWeights" class="grid2 hidden" style="margin-top:8px; gap:8px 18px;">
                       <div class="field"><label for="wMu">&mu; &mdash; evolutionary rate</label><input type="number" id="wMu" step="0.001" min="0" value="0.135"></div>
                       <div class="field"><label for="wRe">Re &mdash; reproduction number</label><input type="number" id="wRe" step="0.001" min="0" value="0.30"></div>
