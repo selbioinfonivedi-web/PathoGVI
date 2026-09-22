@@ -14,37 +14,9 @@ to `~/.local/bin/mvn`).
 ```bash
 mvn clean test      # build + run the full test suite (213 tests)
 mvn package -pl gvi-cli -am   # produce the self-contained CLI jar
-mvn package -pl gvi-ui -am    # produce the self-contained GUI jar
 ```
 
-The runnable jars are `gvi-cli/target/gvi-calculator.jar` (CLI) and
-`gvi-ui/target/gvi-calculator-ui.jar` (desktop GUI).
-
-## Desktop GUI
-
-```bash
-java -jar gvi-ui/target/gvi-calculator-ui.jar
-```
-
-The same pipeline the CLI runs (`GviPipeline`/`PipelineConfig`/
-`PipelineResult`/`ReportWriter` -- reused directly, not reimplemented)
-behind file pickers and a results table instead of flags: pick a FASTA
-(required) plus whichever of metadata/GFF3/codon-usage/incidence/reference-GC
-you have, tick which indices to compute, hit Run. Computation always runs on
-a background thread with a progress indicator so a large alignment never
-freezes the window. Results show in a sortable table (one row per sequence), a Sensitivity
-Analysis tab (see below), a full text report tab, and a skipped/warnings
-tab; "Export JSON…"/"Export CSV…" write the same report formats the CLI
-does. "Run Self-Test" runs the same 13-check bundled diagnostic suite as
-`--self-test`, in a dialog.
-
-Screenshot-verified (real X display, real synthetic click through the
-"Run Self-Test" button, background task execution, and the resulting PASS
-dialog) during development -- this isn't just compiled, it was actually run.
-
-By default the GUI is built against the `linux` JavaFX native jars (see
-`javafx.platform` property in the parent `pom.xml`); build with
-`-Djavafx.platform=win` or `-Djavafx.platform=mac` on/for those platforms.
+The runnable jar is `gvi-cli/target/gvi-calculator.jar` (CLI).
 
 ## Web interface
 
@@ -563,7 +535,7 @@ compositional shift: actual horizontal gene transfer / reassortment
 (foreign sequence with different base composition) versus **host-immune
 RNA-editing pressure** -- a real, well-documented, non-HGT mechanism that
 also shifts genome composition. So whenever the actual reference sequence
-is available (the CLI/GUI pipeline always supplies it), `GC_Deviation` also
+is available (the CLI/web pipeline always supplies it), `GC_Deviation` also
 runs `MutationalSignatureAnalyzer`, which tests for two specific,
 literature-documented editing signatures:
 
@@ -605,9 +577,7 @@ difference proportionally across the other indices so weights still sum to
 1), and the resulting GVI range is reported per index -- a "tornado chart"
 of which index the composite score is most sensitive to. In the CLI's text
 report this is the `-- Sensitivity analysis --` section (sorted
-most-sensitive-first); in the JSON report it's the `sensitivity` array. The
-GUI's "Sensitivity Analysis" tab shows the same data as a sortable table
-(base GVI, GVI at -20%/+20% weight, and the spread between them per index).
+most-sensitive-first); in the JSON report it's the `sensitivity` array.
 This always runs alongside the whole-file GVI (cheap -- one extra GVI
 computation per contributing index) rather than being a separate opt-in
 flag.
@@ -623,18 +593,9 @@ jpackage --type app-image \
   --main-class org.gvi.cli.GviCli \
   --name GVICalculator --app-version 0.1.0 \
   --dest /tmp/jpkg-out
-
-# GUI (note the different main class -- the non-Application launcher, see GviUiLauncher)
-mkdir -p /tmp/jpkg-ui-in && cp gvi-ui/target/gvi-calculator-ui.jar /tmp/jpkg-ui-in/
-jpackage --type app-image \
-  --input /tmp/jpkg-ui-in \
-  --main-jar gvi-calculator-ui.jar \
-  --main-class org.gvi.ui.GviUiLauncher \
-  --name GVICalculatorUI --app-version 0.1.0 \
-  --dest /tmp/jpkg-ui-out
 ```
 
-Both were built and launched this way during development to confirm the
+This was built and launched this way during development to confirm the
 native app-image actually starts correctly (not just that `jpackage`
 exits 0).
 
@@ -669,9 +630,6 @@ installers, built on each target OS respectively.
   construction, weight calibration, and crash resilience).
 - `gvi-cli` -- picocli entrypoint wiring everything together, global crash
   containment, text/JSON/CSV reporting, and the `--calibrate` mode.
-- `gvi-ui` -- JavaFX desktop GUI, depends on `gvi-cli` and reuses its
-  `GviPipeline`/`PipelineConfig`/`PipelineResult`/`ReportWriter` classes
-  directly rather than duplicating the orchestration logic.
 
 ## Validation
 
