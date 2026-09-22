@@ -287,6 +287,17 @@ async function run() {
     bootstrapSupport: $('bootstrapSupport').checked,
     mlDnds: $('dndsMethod').value === 'ml',
     bdskyRe: $('reMethod').value !== 'phylodynamic_only',
+    weights: $('weightScheme').value === 'custom' ? JSON.stringify({
+      'mu': Number($('wMu').value),
+      'Re': Number($('wRe').value),
+      'pi': Number($('wPi').value),
+      'MB': Number($('wMb').value),
+      'dN/dS': Number($('wDnds').value),
+      'GD': Number($('wGd').value),
+      'CAI': Number($('wCai').value),
+      'GC_Deviation': Number($('wGc').value),
+      'RI': Number($('wRi').value)
+    }) : null,
     auto: true
   };
   try {
@@ -307,6 +318,9 @@ async function run() {
   }
 }
 $('runBtn').addEventListener('click', run);
+$('weightScheme').addEventListener('change', () => {
+  $('customWeights').hidden = $('weightScheme').value !== 'custom';
+});
 $('idxAllBtn').addEventListener('click', () => {
   document.querySelectorAll('.idxCheck').forEach((el) => { el.checked = true; });
 });
@@ -325,6 +339,9 @@ $('clearBtn').addEventListener('click', () => {
   $('muMethod').value = ''; $('dndsMethod').value = ''; $('reMethod').value = '';
   $('bootstrapSupport').checked = false;
   document.querySelectorAll('.idxCheck').forEach((el) => { el.checked = true; });
+  $('weightScheme').value = ''; $('customWeights').hidden = true;
+  const defaultWeights = {wMu: 0.135, wRe: 0.30, wPi: 0.10, wMb: 0.215, wDnds: 0.15, wGd: 0.10, wCai: 0.0275, wGc: 0.0275, wRi: 0.035};
+  Object.entries(defaultWeights).forEach(([id, v]) => { $(id).value = v; });
   ['mSeqs', 'mLen', 'mCov', 'mExcl'].forEach((i) => { $(i).textContent = '—'; });
   $('mSeqsSub').textContent = 'no alignment loaded';
   $('mCovSub').textContent = 'of the weighting scheme';

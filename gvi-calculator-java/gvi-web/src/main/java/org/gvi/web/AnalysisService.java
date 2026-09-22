@@ -140,6 +140,7 @@ public final class AnalysisService {
         Path gff = write(work, "genes.gff3", r.gff);
         Path codonUsage = write(work, "codon_usage.csv", r.codonUsage);
         Path incidence = write(work, "incidence.csv", r.incidence);
+        Path weights = write(work, "weights.json", r.weights);
 
         Set<String> indices = new LinkedHashSet<>();
         if (r.indices == null || r.indices.isEmpty()) {
@@ -167,7 +168,7 @@ public final class AnalysisService {
                 r.relaxedClockMu,       // uncorrelated lognormal relaxed clock -- opt-in, needs full date coverage
                 r.bdskyRe,
                 r.mlDnds,               // ML dN/dS -- opt-in, 61-state codon likelihood; slower on longer genes
-                null,
+                weights,
                 parseGenomeType(r.genomeType),
                 Map.of(),
                 null,

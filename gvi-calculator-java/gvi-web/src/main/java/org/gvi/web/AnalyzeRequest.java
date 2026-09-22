@@ -65,4 +65,13 @@ public class AnalyzeRequest {
     public boolean mlDnds;
 
     public List<String> indices;
+
+    /**
+     * Raw JSON text, not a parsed object: written straight to a temp file and handed to
+     * {@code CompositeWeightsReader} exactly as {@code --weights <file>} does on the CLI -- a flat
+     * object of index label -&gt; weight, e.g. {@code {"Re": 0.4, "MB": 0.1}}. Null/blank means the
+     * specification's default midpoints. Deliberately permissive: any label not mentioned keeps its
+     * default weight, and the full set is renormalized to sum to 1.0 -- see that class's javadoc.
+     */
+    public String weights;
 }

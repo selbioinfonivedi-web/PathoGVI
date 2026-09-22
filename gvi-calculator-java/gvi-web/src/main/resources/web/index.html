@@ -198,6 +198,26 @@
                         <span>Bootstrap support<span class="hint">Felsenstein (1985) nonparametric bootstrap on the &mu; tree. Only applies when the &mu; estimator above is left at Auto.</span></span></label>
                     </div>
                   </div>
+
+                  <div class="field" style="border-top:1px solid var(--border-lt); padding-top:13px; margin-top:8px;">
+                    <label for="weightScheme">Composite weighting</label>
+                    <select id="weightScheme">
+                      <option value="">Default (specification midpoints)</option>
+                      <option value="custom">Custom</option>
+                    </select>
+                    <p class="hint">The default weights are the specification's asserted midpoints, not fitted against any outcome. Any index you don't set below keeps its default, and the full set of 9 is renormalized to sum to 1 automatically.</p>
+                    <div id="customWeights" class="grid2 hidden" style="margin-top:8px; gap:8px 18px;">
+                      <div class="field"><label for="wMu">&mu; &mdash; evolutionary rate</label><input type="number" id="wMu" step="0.001" min="0" value="0.135"></div>
+                      <div class="field"><label for="wRe">Re &mdash; reproduction number</label><input type="number" id="wRe" step="0.001" min="0" value="0.30"></div>
+                      <div class="field"><label for="wPi">&pi; &mdash; nucleotide diversity</label><input type="number" id="wPi" step="0.001" min="0" value="0.10"></div>
+                      <div class="field"><label for="wMb">MB &mdash; mutation burden</label><input type="number" id="wMb" step="0.001" min="0" value="0.215"></div>
+                      <div class="field"><label for="wDnds">dN/dS &mdash; selection pressure</label><input type="number" id="wDnds" step="0.001" min="0" value="0.15"></div>
+                      <div class="field"><label for="wGd">GD &mdash; genetic distance</label><input type="number" id="wGd" step="0.001" min="0" value="0.10"></div>
+                      <div class="field"><label for="wCai">CAI &mdash; codon adaptation</label><input type="number" id="wCai" step="0.001" min="0" value="0.0275"></div>
+                      <div class="field"><label for="wGc">GC &mdash; GC content deviation</label><input type="number" id="wGc" step="0.001" min="0" value="0.0275"></div>
+                      <div class="field"><label for="wRi">RI &mdash; recombination</label><input type="number" id="wRi" step="0.001" min="0" value="0.035"></div>
+                    </div>
+                  </div>
                 </div>
               </details>
 

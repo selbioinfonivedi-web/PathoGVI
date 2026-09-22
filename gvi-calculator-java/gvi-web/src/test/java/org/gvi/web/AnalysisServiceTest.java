@@ -124,6 +124,43 @@ class AnalysisServiceTest {
     }
 
     /**
+     * The web UI's custom-weighting fields send a raw JSON string (mirroring the CLI's
+     * {@code --weights <file>}), which {@link AnalysisService#buildConfig} must write to a temp file
+     * and wire through as {@code weightsPath} -- not silently ignore. Upweighting one index heavily
+     * must visibly shift both that index's effective weight and the composite score, and the
+     * response must carry the "using custom weights" warning so a caller can tell defaults weren't
+     * used silently.
+     */
+    @Test
+    void customWeightsSentAsJsonShiftTheCompositeAndAreReported() throws Exception {
+        AnalyzeRequest defaultRequest = new AnalyzeRequest();
+        defaultRequest.fasta = alignment();
+        defaultRequest.organismClass = "virus";
+        defaultRequest.genomeType = "rna";
+        AnalyzeResponse withDefaults = service.analyze(defaultRequest);
+
+        AnalyzeRequest customRequest = new AnalyzeRequest();
+        customRequest.fasta = alignment();
+        customRequest.organismClass = "virus";
+        customRequest.genomeType = "rna";
+        customRequest.weights = "{\"RI\": 0.9}";
+        AnalyzeResponse withCustom = service.analyze(customRequest);
+
+        assertThat(withCustom.gvi).as("upweighting RI to 0.9 must move the composite, not match the default run")
+                .isNotCloseTo(withDefaults.gvi, within(1e-9));
+        assertThat(withCustom.warnings.stream().anyMatch(w -> w.contains("Using custom composite weights")))
+                .as("the response must say custom weights were actually used")
+                .isTrue();
+
+        double defaultRiWeight = withDefaults.components.stream()
+                .filter(c -> c.key.equals("RI")).findFirst().orElseThrow().effectiveWeight;
+        double customRiWeight = withCustom.components.stream()
+                .filter(c -> c.key.equals("RI")).findFirst().orElseThrow().effectiveWeight;
+        assertThat(customRiWeight).as("RI's effective weight must actually increase, not just the total score change")
+                .isGreaterThan(defaultRiWeight);
+    }
+
+    /**
      * The web UI's genetic-distance dropdown must send values this service actually understands.
      * It once sent {@code "k80"} for Kimura two-parameter, which {@link
      * AnalysisService#buildConfig} rejected with {@code GviInputException} on every single request,
