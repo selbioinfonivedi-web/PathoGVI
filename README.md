@@ -55,9 +55,15 @@ A composite score built from up to nine genomic indices:
 - **GC** — GC content deviation
 - **RI** — recombination index
 
-Only the alignment is required to get a score; feeding it more (metadata dates, a
-gene annotation, a host codon table, case-incidence data) unlocks more of the nine
-indices and makes the score more complete.
+For all nine indices to be computed, provide:
+- an **aligned multi-FASTA** (always required),
+- a **metadata CSV** with `collection_date` per sequence,
+- a **GFF3** gene annotation,
+- a **host codon usage table** (a bundled species, or your own) and `--organism-class
+  virus`/`bacterium`.
+
+A bare FASTA alone still produces a score, just from fewer indices (π, MB, GD, GC —
+the four that need only the sequence itself).
 
 Every result also reports:
 - **which indices were actually scored** and why any others were skipped,
