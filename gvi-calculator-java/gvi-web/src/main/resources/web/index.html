@@ -3,24 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>GVI Calculator</title>
+<title>PathoGVi | Genomic Virulence Index Calculator</title>
 <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
 <div class="shell">
   <header class="topbar">
     <div class="brand">
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 20V10l4-4 4 4v10M13 20V6l4-4 4 4v14"/></svg>
-      <!-- The page needs one real heading: it is the document's accessible name and the first thing
-           a screen reader announces. The two visual lines are the same string, split for typography. -->
-      <h1 style="margin:0; font-weight:400;">
-        <span style="display:block; font-size:15px; font-weight:700; letter-spacing:-0.02em; line-height:1.15;">GVI</span>
-        <span style="display:block; font-size:9.5px; letter-spacing:0.06em; text-transform:uppercase;">Genomic Virulence Index Calculator</span>
-      </h1>
+      <svg class="dna-mark" viewBox="0 0 44 54" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M10 2c0 13 24 13 24 25S10 39 10 52M34 2C34 15 10 15 10 27s24 12 24 25M14 10h16M10 19h24M10 35h24M14 44h16"/></svg>
+      <h1><span>PathoGVi</span><small>An Genomic Virulence Index Calculator</small></h1>
     </div>
-    <div class="topbar-meta">
-      <div class="meta-item"><span class="meta-label">Engine</span><span class="meta-value"><strong id="engineLabel">local pipeline</strong></span></div>
-      <div class="meta-item"><span class="meta-label">Status</span><span class="meta-value"><strong id="statusLabel">awaiting input</strong></span></div>
+    <div class="pipeline-state" title="The local analytical pipeline is ready">
+      <i aria-hidden="true"></i><span>Pipeline: <strong id="statusLabel">Running</strong></span>
+      <span id="engineLabel" class="sr-only">local pipeline</span>
     </div>
     <div class="nav-actions">
       <button class="btn btn-ghost btn-sm" id="selfTestBtn" type="button">Self-test</button>
@@ -32,12 +27,12 @@
   <!-- Metric strip: the reference platform's value-first cell (number, label, qualifier).
        The 1px grid gap over the border colour is what draws the hairline dividers. -->
   <div class="meta-row" id="datasetMeta">
-    <div class="meta-item"><span class="metric" id="mSeqs">&mdash;</span><span class="metric-label">Sequences</span><span class="metric-sub" id="mSeqsSub">no alignment loaded</span></div>
-    <div class="meta-item"><span class="metric" id="mLen">&mdash;</span><span class="metric-label">Alignment</span><span class="metric-sub">columns</span></div>
-    <div class="meta-item"><span class="metric" id="mOrg">&mdash;</span><span class="metric-label">Organism class</span><span class="metric-sub">gates CAI</span></div>
-    <div class="meta-item"><span class="metric" id="mGenome">&mdash;</span><span class="metric-label">Genome type</span><span class="metric-sub">sets the &mu; ceiling</span></div>
-    <div class="meta-item"><span class="metric" id="mCov">&mdash;</span><span class="metric-label">Coverage</span><span class="metric-sub" id="mCovSub">of the weighting scheme</span></div>
-    <div class="meta-item"><span class="metric" id="mExcl">&mdash;</span><span class="metric-label">Excluded</span><span class="metric-sub" id="mExclSub">indices gated out</span></div>
+    <div class="meta-item"><span class="metric-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 2c0 5 10 5 10 10S7 17 7 22M17 2c0 5-10 5-10 10s10 5 10 10M8 6h8M7 12h10M8 18h8"/></svg></span><div><span class="metric-label">Sequences</span><span class="metric" id="mSeqs">&mdash;</span><span class="metric-sub" id="mSeqsSub">no alignment loaded</span></div></div>
+    <div class="meta-item"><span class="metric-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5h12M8 12h12M8 19h12M3 5h.01M3 12h.01M3 19h.01"/></svg></span><div><span class="metric-label">Alignment</span><span class="metric" id="mLen">&mdash;</span><span class="metric-sub">columns</span></div></div>
+    <div class="meta-item"><span class="metric-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.07.07l2-2A5 5 0 0 0 12 4l-1.15 1.15M14 11a5 5 0 0 0-7.07-.07l-2 2A5 5 0 0 0 12 20l1.15-1.15"/></svg></span><div><span class="metric-label">Organism class</span><span class="metric" id="mOrg">&mdash;</span><span class="metric-sub">gates CAI</span></div></div>
+    <div class="meta-item"><span class="metric-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 2h9l4 4v16H6zM14 2v5h5M9 12h6M9 16h6"/></svg></span><div><span class="metric-label">Genome type</span><span class="metric" id="mGenome">&mdash;</span><span class="metric-sub">sets the &mu; ceiling</span></div></div>
+    <div class="meta-item"><span class="metric-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20v-6h3v6H4zm7 0V9h3v11h-3zm7 0V4h3v16h-3z"/></svg></span><div><span class="metric-label">Coverage</span><span class="metric" id="mCov">&mdash;</span><span class="metric-sub" id="mCovSub">of the weighting scheme</span></div></div>
+    <div class="meta-item"><span class="metric-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 4h18l-7 8v6l-4 2v-8z"/></svg></span><div><span class="metric-label">Excluded</span><span class="metric" id="mExcl">&mdash;</span><span class="metric-sub" id="mExclSub">indices gated out</span></div></div>
   </div>
 
   <div class="body-grid">
