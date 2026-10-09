@@ -469,3 +469,22 @@ summary.disclosure{font-size:14px;color:#0459cf;background:#e7f0fa;}.callout{bor
   .topbar{padding-left:20px;padding-right:20px;}.pipeline-state{margin-left:10px;}.nav-actions{margin-left:auto;}
   .topbar .btn{padding-left:14px;padding-right:14px;}.tab{padding-left:18px;padding-right:18px;}
 }
+
+/* Final visual calibration against the supplied PathoGVi reference. */
+:root{
+  --bg:#f1f5f8; --surface:#fbfcfe; --surface-alt:#f1f5f9;
+  --border:#d2dee9; --border-light:#e3eaf1;
+  --text:#092d58; --text-sec:#385a83; --text-tert:#587394; --text-muted:#7890aa;
+}
+body{background:#f1f5f8;color:#092d58;}
+.topbar{background:linear-gradient(105deg,#f4f7fa 0%,#e4ecf3 53%,#cfdeeb 100%);box-shadow:0 1px 6px rgba(24,55,91,.09);}
+.brand .dna-mark{color:#143e6d;stroke:#143e6d;opacity:1;}
+.topbar .brand h1 span:first-child{color:#123761;}.brand h1 small{color:#183d68;}
+.pipeline-state{background:rgba(229,238,246,.74);border-color:#c7d9e7;color:#132f53;}
+.meta-row{padding-top:9px;background:#f1f5f8;}.meta-row .meta-item{background:#f9fbfd;border-color:#d6e1eb;box-shadow:0 1px 3px rgba(30,64,102,.055);}
+.metric-icon{background:linear-gradient(145deg,#eef3f8,#e5edf4);color:#2f5d8c;}
+.content{background:#f1f5f8;}.tabpanel.padded > .card,.tabpanel#panel-input > .card{background:#fbfcfe;box-shadow:0 1px 4px rgba(30,64,102,.07);}
+.field input[type=text],.field input[type=number],.field select,.field textarea,.field input[type=file]{background:#fdfefe;border-color:#bfcee0;}
+.dropzone{background:linear-gradient(105deg,#f8fbfd,#f0f5f9);border-color:#adc2d7;}
+.tabbar{background:#f1f5f8;}.tab:hover{background:#eef4f9;}
+.statusbar{background:linear-gradient(90deg,#dce7f0,#cbd9e6);}
